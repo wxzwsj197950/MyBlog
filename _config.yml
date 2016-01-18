@@ -1,10 +1,10 @@
 # Site settings
-title: Clean Blog
+title: WUXX BLOG
 header-img: img/home-bg.jpg
-email: your-email@yourdomain.com
-description: "Write your site description here. It will be used as your sites meta description as well!"
-baseurl: ""
-url: "http://yourdomain.com"
+email: 935817127@qq.com
+description: "This is Wuxx's Blog"
+baseurl: "/myblog"
+url: "http://wxzwsj197950.hithub.io/myblog"
 twitter_username: SBootstrap
 github_username:  davidtmiller
 facebook_username:  IronSummitMedia
