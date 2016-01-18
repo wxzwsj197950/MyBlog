@@ -4,7 +4,7 @@ title:      "测试用"
 subtitle:   "测试"
 date:       2016-01-18 12:00:00
 author:     "Wuxx"
-header-img: ""
+header-img: "img/post-sample-image.jpg"
 ---
 **测试**
 **测试**
