@@ -1,0 +1,32 @@
+---
+layout:     post
+title:      "提取B站视频真实地址的快速方法"
+subtitle:   "清晰度不高，不过很简单"
+date:       2016-01-19 15:30:00
+author:     "Wuxx"
+header-img: "img/post-bg-01.jpg"
+---
+
+# bilibili视频真实地址获取方法 #
+
+ 经常上B站免不了看到什么好视频想下载。网上已经有类似的下载网站了，而且功能丰富，可以下载多种格式，不过作为程序员还是想自己弄一下。
+ 
+ 目前找到的下载方法非常简单，测了4，5个视频都能下载，下载下来是mp4格式，只要知道AV号就行。（逛B站的应该都懂AV号是啥吧。。。）唯一缺点就是视频清晰度一般。
+ 
+**下面说说我的分析过程：**
+
+ 如果是windows电脑上正常的登录B站的话，可以在网站源码上看到**<object\>**标签，这是B站的flash播放器，（现在优酷土豆什么的都还在用flash播放器，然而美帝的youtube已经在全面更换HTML5播放器了）。它的参数列表里有一个aid和cid（aid都懂，cid就不懂是什么了）。它的flash播放器是一个swf格式文件，我大二选修课选的flash。。。知道应该在播放器里有flash的as代码，根据aid和cid参数计算出了真实的播放地址。反编译swf的工具也非常多，但是我没去尝试，所以不知道可不可行，如果可以的话最终获得的是flv格式的视频。
+
+但是我这里发现了一个更简单的途径。iphone手机也能上网页版b站，也能看视频，然而ios浏览器不支持flash这大家都懂，一般网站都有为ios准备专门的视频地址，所以，我百度到了一个好用的软件：User Agent Switcher。它是一个Chrome插件，可以帮你把Chrome“变成”其它浏览器。（软件下载地址的话把软件名字输进去百度一下一大堆）
+
+然后用这个插件把Chrome切换成Iphone再登录b站，出现了我们熟悉的b站Iphone的首页（底下还有打开手机客户端的链接XD）。然后F12，调试工具里面看到XHR请求，有这么一条 **html5?aid=3627535&page=1** html5？看来是专为ios准备的h5播放器。访问了**http://www.bilibili.com/m/html5?aid=3627535&page=1**这个请求的响应如下：
+
+**{"img":"http://i1.hdslb.com/video/e8/e86d9351b91aa741f40e83fef442615a.jpg","cid":"http://comment.bilibili.com/5798811.xml","src":"http://cn-zjjh11-dx.acgvideo.com/vg15/3/f4/5798811.mp4?expires=1453376100&ssig=y_zyX_19hCP1K76GhZGj6Q&oi=3728888133&internal=1&rate=0"}**
+
+
+OK，img就是视频封面，cid访问一下，是个XML格式文件，看内容可以看出是视频底下的评论，src就是我们最需要的视频地址了。
+
+总结：要获得B站视频的真实地址，先访问 http://www.bilibili.com/m/html5?aid=3627535&page=1 aid=后面的是你要下载的视频的av号，page=后面的是分P视频的p序号。然后在响应的页面里的src后面的东东就是下载的地址了。
+
+
+
