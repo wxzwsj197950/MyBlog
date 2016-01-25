@@ -21,9 +21,12 @@ header-img: "img/post-bg-01.jpg"
 
 然后用这个插件把Chrome切换成Iphone再登录b站，出现了我们熟悉的b站Iphone的首页（底下还有打开手机客户端的链接XD）。然后F12，调试工具里面看到XHR请求，有这么一条 **html5?aid=3627535&page=1** html5？看来是专为ios准备的h5播放器。访问了**http://www.bilibili.com/m/html5?aid=3627535&page=1**这个请求的响应如下：
 
-**{"img":"http://i1.hdslb.com/video/e8/e86d9351b91aa741f40e83fef442615a.jpg",
-"cid":"http://comment.bilibili.com/5798811.xml",
-"src":"http://cn-zjjh11-dx.acgvideo.com/vg15/3/f4/5798811.mp4?expires=1453376100&ssig=y_zyX_19hCP1K76GhZGj6Q&oi=3728888133&internal=1&rate=0"}**
+    {"img":"http://i1.hdslb.com/video/e8/e86d9351b91aa741f40e83fef442615a.jpg",
+
+    "cid":"http://comment.bilibili.com/5798811.xml",
+
+    "src":"http://cn-zjjh11-dx.acgvideo.com/vg15/3/f4/5798811.mp4?
+expires=1453376100&ssig=y_zyX_19hCP1K76GhZGj6Q&oi=3728888133&internal=1&rate=0"}
 
 
 OK，img就是视频封面，cid访问一下，是个XML格式文件，看内容可以看出是视频底下的评论，src就是我们最需要的视频地址了。
