@@ -1,0 +1,128 @@
+---
+layout:     post
+title:      "WCF学习笔记——AOP"
+subtitle:   "ContextBoundObject，IMessageSink"
+date:       2016-01-25 10:30:00
+author:     "Wuxx"
+header-img: "img/post-bg-04.jpg"
+---
+
+有时候我们要在一个方法被调用前执行一些操作，比如我要记录一个方法运行的时间，我们可能会这么写：
+
+    public void function() {
+		Stopwatch watch = new Stopwatch();
+        watch.start();
+		//方法执行的操作
+        ...
+        watch.stop();
+        int time=watch.Elapsed.Milliseconds;
+        Console.WriteLine("方法执行经过了:"+time+"ms");
+    }
+
+那如果我们要很多方法都记录时间呢？如果我们除了记录时间还要执行其它操作呢？你要每个方法都改代码吗？明显这样写很不灵活。
+
+AOP叫面向切面编程，具体的概念百度百科有，以我目前的理解就是把一个事情分成多个面，比如我们要监控一个计算总额的方法调用的性能，同时还要写日志，这些和方法的具体功能无关的代码，但是每个方法都要执行，我们把这部分和具体方法操作分离开，重用起来。
+![](http://image78.360doc.com/DownloadImg/2014/08/1909/44415643_2.png)
+## 上下文 ##
+通常情况下，一个进程只能运行一个应用程序。但在.NET环境下，一个进程可以运行多个应用程序，而这里的应用程序则以应用程序域划分，同一个应用程序或者程序集可以加载到同一进程的不同应用程序域中去。
+一个程序域中又有多个上下文，所以上下文是.Net程序运行的最小单元，跨上下文的调用都算远程调用。
+![](http://hi.csdn.net/attachment/201110/16/0_1318760265nsQU.gif)
+
+![](http://hi.csdn.net/attachment/201110/16/0_1318778589GIcB.gif)
+
+这里就用到**ContextBoundObject**类。继承了这个类的类就叫上下文绑定对象。一般的对象叫上下文灵活对象，它们运行在默认上下文中，继承了ContextBoundObject对象有自己的上下文，而其它对象访问它都属于跨上下文访问了，也就是远程访问。远程访问.Net规定是不允许直接访问的，而是通过一个叫透明代理的东西访问。新建或者访问非默认的上下文要经过如下步骤：
+![](http://image78.360doc.com/DownloadImg/2014/08/1909/44415643_5.png)
+其中的消息接收器能获得远程方法调用的信息，这个就是我们要的。消息接收器可以不止一个，它们像链表一样的组成消息接收链，当前消息处理完就把消息传递给下一个接收器，我们可以定义自己的消息接收器，加入消息接收器链中
+
+对于消息接收器，我们要实现IMessageSink接口。接口的属性和方法：[IMessageSink](https://msdn.microsoft.com/zh-cn/library/system.runtime.remoting.messaging.imessagesink(v=vs.110).aspx "IMessageSink")。
+
+其中最重要的方法是
+
+	public IMessage SyncProcessMessage(IMessage msg)
+	{
+
+	}
+
+这个方法会在上下文对象创建和调用方法时被调用。我们可以写类似下面的代码：
+
+ 		public IMessage SyncProcessMessage(IMessage msg)
+        {
+            IMethodCallMessage call = msg as IMethodCallMessage;
+            //方法调用之前执行操作
+            BeforeAopHandles(call);
+            IMessage retMsg = m_NextSink.SyncProcessMessage(msg);
+            IMethodReturnMessage reply = retMsg as IMethodReturnMessage;
+            //方法结束之后执行操作
+            AfterAopHandles(reply);
+            return retMsg;
+        }
+BeforeAopHandles和AfterAopHandles就是我们在方法调用前后执行的方法。
+
+要怎么使用这个消息接收器呢？我们要定义一个ContextAttribute属性
+
+	[AttributeUsage(AttributeTargets.Class)]
+    public class AopAttribute : ContextAttribute,IContributeObjectSink
+    {
+        public AopAttribute()
+            : base("Aop")
+        { }
+        public IMessageSink GetObjectSink(MarshalByRefObject obj, IMessageSink nextSink)
+        {
+            return new 你的消息接收器(nextSink);
+        }
+    }  
+
+然后你就可以在要执行AOP操作的类上加上属性[Aop]并继承ContextBoundObject来执行AOP操作。
+
+完整示例代码：
+
+	[AttributeUsage(AttributeTargets.Class)]
+    public class AopAttribute : ContextAttribute,IContributeObjectSink
+    {
+        public AopAttribute()
+            : base("Aop")
+        { }
+        public IMessageSink GetObjectSink(MarshalByRefObject obj, IMessageSink nextSink)
+        {
+            return new MySink(nextSink);
+        }
+    }
+
+     class MySink : IMessageSink
+    {
+
+        private IMessageSink m_NextSink;
+
+        private Stopwatch watch;
+        
+        public IMessageSink NextSink
+        {
+            get { return m_NextSink; }
+        }
+
+        public LogSink(IMessageSink nextSink)
+        {
+            m_NextSink = nextSink;
+        }
+
+        public IMessage SyncProcessMessage(IMessage msg)
+        {
+            IMethodCallMessage call = msg as IMethodCallMessage;
+            Console.WriteLine("执行了："+call.MethodName+"方法。");
+        }
+	}
+
+    [Aop]
+    class Program : ContextBoundObject
+    {
+        
+        public void MyFunc() {
+             return;   
+        }
+
+        static void Main(string[] args)
+        {
+            Program p = new Program();
+            p.MyFunc();
+        }
+    }
