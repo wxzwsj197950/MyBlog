@@ -1,8 +1,8 @@
 ---
 layout:     post
-title:      "Http的缓存学习笔记"
-subtitle:   "ETag与Cache-Control"
-date:       2016-02-02 13:03:00
+title:      "HTTP缓存学习笔记"
+subtitle:   "ETag,Cachecontrol使用"
+date:       2016-01-26 14:36:00
 author:     "Wuxx"
 header-img: "img/post-bg-04.jpg"
 ---
