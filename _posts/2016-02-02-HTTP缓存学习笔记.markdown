@@ -2,7 +2,7 @@
 layout:     post
 title:      "HTTP缓存学习笔记"
 subtitle:   "ETag,Cachecontrol的使用"
-date:       2016-02-02 14:36:00
+date:       2016-01-30 14:36:00
 author:     "Wuxx"
 header-img: "img/post-bg-04.jpg"
 ---
