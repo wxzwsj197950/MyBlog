@@ -118,3 +118,5 @@ Bitmap排序1-1000000连续的不重复数字：
 ![](http://wxzwsj197950.github.io/MyImgs/20160204/a2.bmp)
 
 ![](http://wxzwsj197950.github.io/MyImgs/20160204/a3.bmp)
+
+**经测试，Bitmap排序的速度在1000万数据时是C#自带的Array.sort的3倍，5000万数据时是Array.sort的3.7倍。**
