@@ -1,0 +1,131 @@
+---
+layout:     post
+title:      "找两个文本最大相同的行数"
+subtitle:   "LCS算法"
+date:       2016-01-31 23:00:01
+author:     "Wuxx"
+header-img: "img/post-bg-01.jpg"
+---
+
+LCS是Longest Common Subsequence的缩写，即最长公共子序列。一个序列，如果是两个或多个已知序列的子序列，且是所有子序列中最长的，则为最长公共子序列。
+
+子序列中的字符与子字符串中的字符不同，它们不需要是连续的。例如，ACE 是 ABCDE 的子序列，但不是它的子字符串。
+
+现在有一个任务要比较两个文本，所以用LCS找出两个文本相同的行。
+
+假如文本如下：
+![](http://wxzwsj197950.github.io/MyImgs/20160218/lcd_file.png)
+
+图中标出了最长相同的行**a c b d**
+
+LCS用动态规划解决问题，比暴力方法大大提高了速度。
+
+假设L[i,j]表示文件1取到i行，文件2取到j行时的最长匹配行，
+si表示文件1第i行的文本，sj表示则文件2第j行的文本 则
+
+	IF si==sj L[i,j]=L[i-1,j-1] + 1;
+	IF si≠sj L[i,j] = MAX{L[i-1,j],L[i,j-1]}
+
+这样当i=文本1的行数，j=文本2的行数时，L[i,j]就是匹配的最大行数。
+
+为了找到最长匹配的是哪几行，还要有一个指向前一次匹配的指针。
+
+L[i,j]矩阵存的节点如下：
+
+	class StringNode
+    {
+        public int value;
+        public StringNode from;
+        public int h;
+        public int l;
+    }
+
+具体代码如下：
+
+ 	class LCS
+    {
+        StringNode[,] nodes;
+        string[] s1, s2;
+
+        //构造时就构建动态规划矩阵，多次调用就能节约时间
+        public LCS(string[] s1, string[] s2)
+        {
+            this.s1 = s1;
+            this.s2 = s2;
+            nodes = new StringNode[s1.Length+1, s2.Length+1];
+            for (int i = 0; i < s1.Length+1; i++)
+            {
+                for (int j = 0; j < s2.Length+1; j++)
+                {
+                    StringNode node = new StringNode();
+                    node.h = i;
+                    node.l = j;
+                    if (j == 0 || i == 0)
+                    {         
+                        node.value = 0;
+                        node.from = null;
+                        nodes[i, j] = node;
+                    }
+                    else
+                    {
+                        if (s1[i-1].Trim() == s2[j-1].Trim())
+                        {
+                            node.value = nodes[i - 1, j - 1].value + 1;
+                            node.from = nodes[i - 1, j - 1];
+                            nodes[i, j] = node;
+                        }
+                        else if(nodes[i - 1,j].value >= nodes[i,j-1].value)
+                        {
+                            node.value = nodes[i - 1, j].value;
+                            node.from = nodes[i - 1, j];
+                            nodes[i, j] = node;
+                        }
+                        else if (nodes[i - 1, j].value < nodes[i, j - 1].value)
+                        {
+                            node.value = nodes[i, j - 1].value;
+                            node.from = nodes[i, j - 1];
+                            nodes[i, j] = node;
+                        }
+                    }
+                }
+            }
+        }
+        //逆向寻找匹配的行数
+        public List<string> GetLCSIndex()
+        {
+            List<string> ret = new List<string>();
+            StringNode now = nodes[nodes.GetLength(0)-1, nodes.GetLength(1)-1];
+            int nv = now.value;
+            while (now.h != 0 || now.l != 0)
+            {
+                now = now.from;
+                if (now.value == (nv - 1))
+                {
+                    ret.Add(s1[now.h]);
+                    nv = now.value;
+                }
+            }
+            ret.Reverse(0, ret.Count);
+            return ret;
+        }
+    }
+
+主函数：
+	  
+        static void Main(string[] args)
+        {
+            string[] s1 = System.IO.File.ReadAllLines("C:/1.txt");
+            string[] s2 = System.IO.File.ReadAllLines("C:/2.txt");
+            LCS lcs = new LCS(s1,s2);
+            List<string> res=lcs.GetLCSIndex();
+            Console.WriteLine("相同的行：");
+            foreach (string s in res)
+            {
+                Console.WriteLine(s);
+            }
+            Console.ReadLine();
+        }
+
+运行结果：
+
+![](http://wxzwsj197950.github.io/MyImgs/20160218/lcs_res.png)
