@@ -1,19 +1,6 @@
 ---
 layout: default
 ---
-<script type="text/javascript"> 
-        window.onload= function() {
-            var objs = document.getElementsByTagName("img");            
-            for(var i=0;i<objs.length;i++)  
-            {  
-                objs[i].onclick=function()  
-                {  
-                    alert("123"); 
-                }  
-                objs[i].style.cursor = "pointer";  
-            } 
-        }
-</script>
 <!-- Post Header -->
 <header class="intro-header" style="background-image: url('{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}')">
     <div class="container">
