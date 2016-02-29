@@ -2,7 +2,8 @@
 layout: default
 ---
 <script type="text/javascript"> 
-            var objs = document.getElementsByTagName("img");             
+        window.onload= function() {
+            var objs = document.getElementsByTagName("img");            
             for(var i=0;i<objs.length;i++)  
             {  
                 objs[i].onclick=function()  
@@ -11,6 +12,7 @@ layout: default
                 }  
                 objs[i].style.cursor = "pointer";  
             } 
+        }
 </script>
 <!-- Post Header -->
 <header class="intro-header" style="background-image: url('{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}')">
