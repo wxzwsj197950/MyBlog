@@ -1,20 +1,16 @@
 ---
 layout: default
 ---
-<script type="text/javascript">
-     function AddImgClickEvent()  
-        {  
+<script type="text/javascript"> 
             var objs = document.getElementsByTagName("img");             
             for(var i=0;i<objs.length;i++)  
             {  
                 objs[i].onclick=function()  
                 {  
-                    window.open(this.src);  
+                    alert("123"); 
                 }  
                 objs[i].style.cursor = "pointer";  
-            }  
-        }  
-        AddImgClickEvent(); 
+            } 
 </script>
 <!-- Post Header -->
 <header class="intro-header" style="background-image: url('{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}')">
