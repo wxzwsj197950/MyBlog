@@ -1,0 +1,105 @@
+---
+layout:     post
+title:      "MySQL存在内容相同行则不插入"
+subtitle:   "神奇的DUAL表"
+date:       2016-01-31 23:00:04
+author:     "Wuxx"
+header-img: "img/post-bg-02.jpg"
+---
+
+Lucene是一个开源的搜索引擎，不同于百度，谷歌这种搜索网站，但用Lucene可以实现一个搜索网站。Lucene的功能很简单，给你的数据建立索引，然后按索引查找数据。类似于数据库的Like查找，但是效率要高得多。
+## .Net下使用Lucene ##
+Lucene.Net用NuGet可以方便的下载。打开vs的程序包管理器控制台，输入**Install-Package Lucene.Net**然后Lucene就会自动下载并引入到你的项目里。
+
+这里我有一个MySQL数据库中的表存了知乎上的文章，我要以这个表为查找对象。表结构如下：
+
+![](http://wxzwsj197950.github.io/MyImgs/20160304/db.jpg)
+
+新建一个windows窗体项目，主窗体如下：
+
+![](http://wxzwsj197950.github.io/MyImgs/20160304/form1.jpg)
+
+Lucene的主要代码如下：
+    
+	//创建索引
+	private void CreateIndex()
+        {
+            string IndexPath = @"C:\IndexData";
+            FSDirectory directory = FSDirectory.Open(new DirectoryInfo(IndexPath), new NativeFSLockFactory());
+
+
+            IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_30), true, IndexWriter.MaxFieldLength.UNLIMITED);
+
+            List<Article> res = ArticleManager.GetAllArticles();
+
+            foreach (var a in res)
+            {
+                Document document = new Document();
+                document.Add(new Field("title", a.Title, Field.Store.YES, Field.Index.ANALYZED));
+                document.Add(new Field("content", a.Content, Field.Store.YES, Field.Index.ANALYZED));
+                writer.AddDocument(document);
+            }
+            writer.Optimize();
+            writer.Dispose();
+            directory.Dispose();
+        }
+
+        //搜索索引
+        private List<Article> SearchFromIndex(string keyword,int num)
+        {
+            List<Article> ret = new List<Article>();
+            string IndexPath = @"C:\IndexData";
+            Analyzer analyzer = new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_30);
+            FSDirectory directory = FSDirectory.Open(new DirectoryInfo(IndexPath), new NoLockFactory());
+            IndexReader reader = IndexReader.Open(directory, true);
+            IndexSearcher searcher = new IndexSearcher(reader);
+            //创建查询
+            PerFieldAnalyzerWrapper wrapper = new PerFieldAnalyzerWrapper(analyzer);
+            wrapper.AddAnalyzer("title", analyzer);
+            wrapper.AddAnalyzer("content", analyzer);
+            string[] fields = { "title", "content" };
+
+            QueryParser parser = new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, fields, wrapper);
+            Query query = parser.Parse(keyword);
+            TopScoreDocCollector collector = TopScoreDocCollector.Create(num, true);
+
+            searcher.Search(query, collector);
+            var hits = collector.TopDocs().ScoreDocs;
+
+            int numTotalHits = collector.TotalHits;
+
+            MessageBox.Show("查找 " + keyword + "  共找到 " + numTotalHits + "个匹配的文档");
+
+            for (int i = 0; i < hits.Count(); i++)
+            {
+                var hit = hits[i];
+                Document doc = searcher.Doc(hit.Doc);
+                Field titleField = doc.GetField("title");
+                Field contentField = doc.GetField("content");
+
+                ret.Add(new Article(titleField.StringValue,contentField.StringValue));
+            }
+
+            if (searcher != null) searcher.Dispose();
+            if (reader != null) reader.Dispose();
+
+            return ret;
+
+        }
+
+程序结果：
+
+![](http://wxzwsj197950.github.io/MyImgs/20160304/res1.jpg)
+
+![](http://wxzwsj197950.github.io/MyImgs/20160304/res2.jpg)
+
+
+## 说明： ##
+
+Lucene的查找基于分词，比如 **“我是一个中国人”**,经过分词可能是 
+
+**我是/是一/一个/个中/中国/国人**
+
+这种叫**二元分词**，就是两个字分成一个词，Lucene的核心包没有中文的分词，因为英文单词都是空格隔开的，对于中文，Lucene的标准分词器就是**一元分词**也就是一个字当作一个词，这种分词肯定很不准确。比如前面的二元分词，你查国人，会把这句话查出来，但是显然这句话和国人没什么关系。。。
+
+想要准确的中文分词可以去网上找Lucene的中文分词扩展，有很多现成的，当然你要是厉害也可以自己写，继承Analyzer类实现对应方法就行了。
