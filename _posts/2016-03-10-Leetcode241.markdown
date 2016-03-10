@@ -1,0 +1,146 @@
+---
+layout:     post
+title:      "Different Ways to Add Parentheses递归分治"
+subtitle:   "Leetcode241"
+date:       2016-01-31 23:00:03
+author:     "Wuxx"
+header-img: "img/post-bg-02.jpg"
+---
+**题目：**
+Given a string of numbers and operators, return all possible results from computing all the different possible ways to group numbers and operators. The valid operators are +, - and *.
+
+
+Example 1
+
+	Input: "2-1-1".
+
+	((2-1)-1) = 0
+	(2-(1-1)) = 2
+	Output: [0, 2]
+
+
+Example 2
+
+	Input: "2*3-4*5"
+
+	(2*(3-(4*5))) = -34
+	((2*3)-(4*5)) = -14
+	((2*(3-4))*5) = -10
+	(2*((3-4)*5)) = -10
+	(((2*3)-4)*5) = 10
+	Output: [-34, -14, -10, -10, 10]
+
+**题目意思：**
+给一个字符串表示的表达式，求添加括号后能得到的所有不同结果。
+
+**想法：**
+每个符号左边的表达式和右边的表达式又能算出不同的结果，是一个递归的问题。所以遍历表达式字符串，遇到运算符号就算出左边和右边所有可能的表达式结果然后按这个运算符运算。
+
+**代码：**
+
+	public class Solution {
+    public IList<int> DiffWaysToCompute(string input) {
+         List<int> ret = new List<int>();
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (input[i] == '+' || input[i] == '-' || input[i] == '*')
+                {
+                    List<int> left = DiffWaysToCompute(input.Substring(0,i)) as List<int>;
+                    List<int> right = DiffWaysToCompute(input.Substring(i+1)) as List<int>;
+                    for (int j = 0; j < left.Count; j++)
+                    {
+                        for (int k = 0; k < right.Count; k++)
+                        {
+                            if (input[i] == '+')
+                            {
+                                ret.Add(left[j] + right[k]);
+                            }
+                            else if (input[i] == '-')
+                            {
+                                ret.Add(left[j] - right[k]);
+                            }
+                            else if (input[i] == '*')
+                            {
+                                ret.Add(left[j] * right[k]);
+                            }
+                        }
+                    }
+                }
+            }
+            if (ret.Count == 0) ret.Add(int.Parse(input));
+            return ret;
+    }
+	}
+
+
+**类似的题目：**
+
+Leetcode95 Unique Binary Search Trees II
+
+Given n, generate all structurally unique BST's (binary search trees) that store values 1...n.
+
+For example,
+Given n = 3, your program should return all 5 unique BST's shown below.
+
+  	 1         3     3      2      1
+   	 \       /     /       / \      \
+     3     2     1        1   3      2
+   	 /     /       \                  \
+  	 2     1         2                 3
+
+**题目大意：**
+求出1-n为节点值的所有二叉搜索树（二叉搜索树：右边的值大于左边）
+
+类似上题，1...n分别做根，比如当根为a求1...(a-1)和(a+1)...n的所有二叉树，然后接到a下面。。。而1...(a-1)和(a+1)...n的所有二叉树又是类似问题，递归得到。
+
+代码：
+
+	/**
+ 	* Definition for a binary tree node.
+ 	* public class TreeNode {
+ 	*     public int val;
+ 	*     public TreeNode left;
+ 	*     public TreeNode right;
+ 	*     public TreeNode(int x) { val = x; }
+ 	* }
+ 	*/
+	public class Solution {
+        public IList<TreeNode> GenerateTrees(int n)
+        {
+            if(n==0) return new List<TreeNode>();
+            return CreateTree(1, n);
+        }
+
+        private IList<TreeNode> CreateTree(int a,int b)
+        {
+            IList<TreeNode> ret = new List<TreeNode>();
+            if (a == b)
+            {
+                ret.Add(new TreeNode(a));
+                return ret;
+            }
+            if (a > b)
+            {
+                ret.Add(null);
+                return ret;
+            }
+            for (int i = a; i <= b; i++)
+            {
+                List<TreeNode> left = CreateTree(a,i-1) as List<TreeNode>;
+                List<TreeNode> right = CreateTree(i + 1, b) as List<TreeNode>;
+                for (int k = 0; k < left.Count; k++)
+                {
+                    for (int j = 0; j < right.Count; j++)
+                    {
+                        TreeNode root = new TreeNode(i);
+                        TreeNode leftRoot = left[k];
+                        TreeNode rigthRoot = right[j];
+                        root.left = leftRoot;
+                        root.right = rigthRoot;
+                        ret.Add(root);
+                    }
+                }
+            }
+            return ret;
+        }
+	}
