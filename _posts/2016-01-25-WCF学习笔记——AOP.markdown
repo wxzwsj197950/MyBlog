@@ -45,6 +45,7 @@ AOP叫面向切面编程，具体的概念百度百科有，以我目前的理�
 
 这个方法会在上下文对象创建和调用方法时被调用。我们可以写类似下面的代码：
 
+
  	public IMessage SyncProcessMessage(IMessage msg)
         {
             IMethodCallMessage call = msg as IMethodCallMessage;
@@ -56,11 +57,13 @@ AOP叫面向切面编程，具体的概念百度百科有，以我目前的理�
             AfterAopHandles(reply);
             return retMsg;
         }
+
+
 BeforeAopHandles和AfterAopHandles就是我们在方法调用前后执行的方法。
 
 要怎么使用这个消息接收器呢？我们要定义一个ContextAttribute属性
 
-	[AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class AopAttribute : ContextAttribute,IContributeObjectSink
     {
         public AopAttribute()
@@ -76,7 +79,7 @@ BeforeAopHandles和AfterAopHandles就是我们在方法调用前后执行的方�
 
 完整示例代码：
 
-	[AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class AopAttribute : ContextAttribute,IContributeObjectSink
     {
         public AopAttribute()
