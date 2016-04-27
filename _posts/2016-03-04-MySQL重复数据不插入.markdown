@@ -1,8 +1,8 @@
 ﻿---
 layout:     post
-title:      "MySQL数据存在相同行不插入"
+title:      "MYSQL实现存在相同行就不添加"
 subtitle:   "DUAL表的作用"
-date:       2016-01-31 23:00:03
+date:       2016-01-31 23:00:00
 author:     "Wuxx"
 header-img: "img/post-bg-02.jpg"
 ---
