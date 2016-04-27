@@ -1,4 +1,4 @@
-﻿---
+---
 layout:     post
 title:      "MYSQL实现存在相同行就不添加"
 subtitle:   "DUAL表的作用"
