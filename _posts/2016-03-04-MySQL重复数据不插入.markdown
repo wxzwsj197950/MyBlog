@@ -1,4 +1,4 @@
----
+﻿---
 layout:     post
 title:      "MySQL存在内容相同行则不插入"
 subtitle:   "神奇的DUAL表"
@@ -6,7 +6,13 @@ date:       2016-01-31 23:00:03
 author:     "Wuxx"
 header-img: "img/post-bg-02.jpg"
 ---
-
+{% highlight c++ linenos %}
+{
+    cout<<endl;
+    cout<<"HAHAHA"<<endl;
+    cout<<"I am Hahaha"<<endl;
+}
+{% endhighlight %}
 最近写了个程序，每天从知乎日报的RSS源爬下来文章，存在数据库里面，但是发现文章总有重复，一篇同样的文章数据库里可能有好几份，要怎么解决呢？
 
 当然可以在程序里面插入数据库时解决，但是我第一想法是在SQL语句中解决，百度了半天终于找到答案。。。
