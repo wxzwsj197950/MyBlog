@@ -13,6 +13,11 @@ header-img: "img/post-bg-02.jpg"
 
 表名叫tb_art，3个字段 title,content,time。title,content相同时就认为是重复了，就不插入。SQL语句如下：
 
+``` c++
+test test
+```
+
+
 	insert into tb_art (title,content,time) 
 	select ?t,?c,?time from dual where not exists
     (select title,content from tb_art 
