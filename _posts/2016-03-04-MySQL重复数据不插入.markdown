@@ -70,12 +70,3 @@ where后面的不成立所以返回空表，自然不插入新数据，当插入
 **select 'a','b','c' from dual**
 
 总结：所以如果不存在要插入的数据，select ?t,?c,?time from dual返回的表就是只有一行并且值为你要插入数据的表，然后insert into select这句话就把这只有一行的表插入tb_art了。
-
-
-{% highlight c++ linenos %}
-{
-    cout<<endl;
-    cout<<"HAHAHA"<<endl;
-    cout<<"I am Hahaha"<<endl;
-}
-{% endhighlight %}
