@@ -42,7 +42,7 @@ L[i,j]矩阵存的节点如下：
 
 具体代码如下：
 
- 	class LCS
+    class LCS
     {
         StringNode[,] nodes;
         string[] s1, s2;
