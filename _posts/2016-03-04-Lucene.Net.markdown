@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "Lucene.Net的使用"
-subtitle:   "牛B的搜索引擎"
+subtitle:   "开源搜索引擎"
 date:       2016-01-31 23:00:04
 author:     "Wuxx"
 header-img: "img/post-bg-02.jpg"
