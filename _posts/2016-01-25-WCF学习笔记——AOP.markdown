@@ -44,9 +44,8 @@ AOP叫面向切面编程，具体的概念百度百科有，以我目前的理�
 	}
 
 这个方法会在上下文对象创建和调用方法时被调用。我们可以写类似下面的代码：
-
-
- 	public IMessage SyncProcessMessage(IMessage msg)
+	
+	```public IMessage SyncProcessMessage(IMessage msg)
         {
             IMethodCallMessage call = msg as IMethodCallMessage;
             //方法调用之前执行操作
@@ -57,7 +56,7 @@ AOP叫面向切面编程，具体的概念百度百科有，以我目前的理�
             AfterAopHandles(reply);
             return retMsg;
         }
-
+	
 
 BeforeAopHandles和AfterAopHandles就是我们在方法调用前后执行的方法。
 
