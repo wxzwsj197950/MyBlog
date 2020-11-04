@@ -1,0 +1,137 @@
+---
+layout:     post
+title:      "MSMQ微软消息队列学习笔记"
+subtitle:   "微软分布式消息队列"
+date:       2016-01-31 11:02:00
+author:     "Wuxx"
+header-img: "img/post-bg-04.jpg"
+---
+
+**MSMQ（微软消息队列）**是Windows操作系统中消息应用程序的基础，是用于创建分布式、松散连接的消息通讯应用程序的开发工具。消息队列和电子邮件有着很多相似处，他们都包含多个属性，用于保存消息，消息类型中都指出发送者和接收者的地址；然而他们的用处却有着很大的区别：消息队列的发送者和接收者是应用程序，而电子邮件的发送者和接收者通常是人。 
+
+MSMQ的两大好处就是**异步和离线**。发消息的程序不需要等待接收方接收消息，即使接收方此时没有连接网络，消息一样不会丢失，接收方下次连上网络时一样可以获取。
+
+要使用MSMQ，首先应该打开MSMQ的功能，WIN7系统进入控制面板-程序-关闭或开启系统服务，然后如下图，开启MSMQ：
+
+![](http://wxzwsj197950.github.io/MyImgs/OpenMSMQ.jpg)
+
+
+右击我的电脑-管理-服务和应用程序-消息队列，如下图：
+
+![](http://wxzwsj197950.github.io/MyImgs/MSMQQueue.jpg)
+
+如果看到这样的图片，说明MSMQ消息队列已经成功开启。
+
+接着就要码代码。。。我们客户端服务端都是控制台程序。先写服务端：
+
+	using System;
+	using System.Messaging; // 需要添加System.Messaging引用
+
+    namespace MSMQServer
+    {
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            if (MessageQueue.Exists(@".\Private$\LearningHardMSMQ"))
+            {
+                // 创建消息队列对象
+                using (MessageQueue mq = new MessageQueue(@".\Private$\LearningHardMSMQ"))
+                {
+                    // 设置消息队列的格式化器
+                    mq.Formatter = new XmlMessageFormatter(new string[] { "System.String" });
+                    foreach (Message msg in mq.GetAllMessages())
+                    {
+                        Console.WriteLine("Received Private Message is: {0}", msg.Body);
+                    }
+
+                    Message firstmsg = mq.Receive(); // 获得消息队列中第一条消息
+                    Console.WriteLine("Received The first Private Message is: {0}", firstmsg.Body);
+                }
+            }
+            Console.Read();
+        }
+    }
+	}
+
+再写客户端：
+
+	using System;
+	using System.Messaging;
+
+	namespace MSMQDemo
+	{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // 创建一个公共队列,公共队列只能创建在域环境里
+            //if (!MessageQueue.Exists(@".\LearningHardMSMQ")) // 判断此路径下是否已经有该队列
+            //{
+            //    using (MessageQueue mq = MessageQueue.Create(@".\LearningHardMSMQ"))
+            //    {
+            //        mq.Label = "LearningHardQueue"; // 设置队列标签
+            //        Console.WriteLine("已经创建了一个公共队列");
+            //        Console.WriteLine("路径为:{0}", mq.Path);
+            //        Console.WriteLine("队列名字为:{0}", mq.QueueName);
+            //        mq.Send("MSMQ Message", "Leaning Hard"); // 发送消息
+            //    }
+            //}
+
+            //if (MessageQueue.Exists(@".\Private$\LearningHardMSMQ"))
+            //{
+            // 删除消息队列
+            //    MessageQueue.Delete(@".\Private$\LearningHardMSMQ");
+            //}
+            // 创建一个私有消息队列
+            if (!MessageQueue.Exists(@".\Private$\LearningHardMSMQ"))
+            {
+                using (MessageQueue mq = MessageQueue.Create(@".\Private$\LearningHardMSMQ"))
+                {
+                    mq.Label = "LearningHardPrivateQueue";
+                    Console.WriteLine("已经创建了一个私有队列");
+                    Console.WriteLine("路径为:{0}", mq.Path);
+                    Console.WriteLine("私有队列名字为:{0}", mq.QueueName);
+                    mq.Send("MSMQ Private Message", "Leaning Hard"); // 发送消息
+                }
+            }
+
+            // 遍历所有的公共消息队列
+            //foreach (MessageQueue mq in MessageQueue.GetPublicQueues())
+            //{
+            //    mq.Send("Sending MSMQ public message" + DateTime.Now.ToLongDateString(), "Learning Hard");
+            //    Console.WriteLine("Public Message is sent to {0}", mq.Path);
+            //}
+
+            if (MessageQueue.Exists(@".\Private$\LearningHardMSMQ"))
+            {
+                // 获得私有消息队列
+                MessageQueue mq = new MessageQueue(@".\Private$\LearningHardMSMQ");
+                mq.Send("Sending MSMQ private message" + DateTime.Now.ToLongDateString(), "Leaning Hard");
+                Console.WriteLine("Private Message is sent to {0}", mq.Path);
+            }
+
+            Console.Read();
+        }
+    }
+	}
+
+这里我暂时只能创建私有队列，公共队列要加入域用户组，具体怎么设置还没试过。。。所以创建公有队列的代码注释了。
+
+然后运行服务端程序，输出如下：
+
+![](http://wxzwsj197950.github.io/MyImgs/MSMQSend.jpg)
+
+这时再查看我们之前打开的私有队列，看到我们的队列，并且消息数为1：
+
+![](http://wxzwsj197950.github.io/MyImgs/MSMQQueue1.jpg)
+
+这就是我们刚发送的消息，存储到了Windows的消息队列里。因为我们这里消息服务器和消息处理的服务是在一台机器上，一般情况有专门的消息服务器来转发消息。
+
+然后可以关闭服务端了（是的，离线接收就是这样XD）。然后打开客户端，
+运行如下：
+
+![](http://wxzwsj197950.github.io/MyImgs/MSMQRecieve.jpg)
+
+上面那句是我们遍历所有消息获得的，下面那句是Recive()方法获得的，用Recive()方法会消除消息，不信你再看消息队列的消息数，是不是又变成0了？
+

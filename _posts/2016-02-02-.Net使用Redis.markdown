@@ -1,0 +1,39 @@
+---
+layout:     post
+title:      ".Net下使用Redis"
+subtitle:   "ServiceStack"
+date:       2016-01-31 14:27:00
+author:     "Wuxx"
+header-img: "img/post-bg-04.jpg"
+---
+
+Redis是一个开源的使用ANSI C语言编写、支持网络、可基于内存亦可持久化的日志型、Key-Value数据库，并提供多种语言的API。从2010年3月15日起，Redis的开发工作由VMware主持。从2013年5月开始，Redis的开发由Pivotal赞助。 
+要使用Redis请先下载,Windows下有msi安装文件可以下载
+官网：[Redis](http://redis.io/)
+
+下载好以后win+R,输入cmd，cd %你Redi安装路径%，（不在C盘的先换盘，比如输入E:进入E盘）。然后输入：
+
+redis-server.exe redis.windows.conf
+
+如果报错Bind错误，多半是端口冲突，进入redis.windows.conf找到Port项改个端口。启动后出现欢迎画面就能访问了。然后开始编程。。
+
+Redis推荐的.Net第三方库：
+[ServiceStack](https://github.com/ServiceStack/ServiceStack/)
+
+下载下Zip文件后打开sln，在VS下编译生成，然后在debug文件夹中找到4个DLL。
+
+新建一个控制台项目，引入这4个DLL，然后码代码。。。。
+
+    class Program
+    {
+        static RedisClient redisClient = new RedisClient("127.0.0.1", 16379);//redis服务IP和端口
+
+        static void Main(string[] args)
+        {
+            redisClient.Set<string>("city", "Shanghai");
+            Console.WriteLine(redisClient.Get<string>("city"));
+            Console.ReadKey();
+        }
+    }
+
+运行，显示 “Shanghai"

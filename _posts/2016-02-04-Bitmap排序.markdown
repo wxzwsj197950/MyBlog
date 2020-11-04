@@ -1,0 +1,122 @@
+---
+layout:     post
+title:      "Bitmap的排序方法"
+subtitle:   "大量无重复数据"
+date:       2016-01-31 11:02:00
+author:     "Wuxx"
+header-img: "img/post-bg-04.jpg"
+---
+## 应用场景 ##
+**1.**腾讯的QQ号用一个数字标示，范围从0到20亿，每个QQ号都有可能出现，所有的QQ号被分散的存储北京、上海、深圳、武汉四个城市的服务器中，现在需要一个路由服务器快速的将登陆的QQ路由到正确的服务器，路由服务器可以读取四个QQ服务器的数据，并构建路由表（需全部存在内存中，内存限制1G），路由表该如何存储？
+关键：QQ号从0-20亿，每个号码都有可能出现；服务器通过0、1、2、3标示，这四种状态可以用2bit来标示，于是可以考虑使用位图来描述路由表。
+解法：从0~20亿，为每个QQ号分配2bit，路由服务器从QQ服务器中获取信息，并设置QQ于服务器号的对应关系。当QQ登录时，路由服务器根据QQ号定位到其对应的状态，并返回对应的服务器号。总的内存大小20亿 * 2 /8 = 5亿字节(约为0.5G)。
+
+**2.**数据库里存了很多800电话号码，数量特别大，以至于内存放不下，如何排序，时间比空间更重要？电话号码类似于800-810-5555。
+关键：去掉电话号码的800后面就是7位的十进制整数，每个整数都有可能出现而且不会重复出现，可以采用各种排序算法对这些数据进行排序，但时间复杂度都在O(NlogN)及以上。
+解法：因每个七位以内的整数都有可能出现，可以用1bit来标示电话号是否出现，遍历整个电话号序列，设置相应的位，遍历位图收集位被设置的号码即可。
+
+## Bitmap介绍  ##
+所谓的Bit-map就是用一个bit位来标记某个元素对应的Value， 而Key即是该元素。由于采用了Bit为单位来存储数据，因此在存储空间方面，可以大大节省。
+位图主要用于快速检索关键字状态，通常要求关键字是一个连续的序列（或者关键字是一个连续序列中的大部分）， 最基本的情况，使用1bit标示一个关键字的状态（可标示两种状态），但根据需要也可以使用2bit（标示4种状态），3bit（标示8种状态），当一个状态标示需要的位数达到32bit时，就演变成来一个整型数组了。
+## 示例 ##
+Bitmap排序1-1000000连续的不重复数字：
+
+	namespace BitmapDemo
+	{
+    class Program
+    {
+
+        static int[] nums = new int[1000000];
+        static string pathBefore = "before.txt";
+        static string pathAfter = "after.txt";
+        //构造这1000000个不重复的数字
+        static void Generator()
+        {
+            Random ran = new Random();
+            
+            for (int i = 0; i < 1000000; i++)
+            {
+                nums[i] = i+1;
+            }
+            for (int i = 0; i < 1000000; i++)
+            {
+                int i1 = ran.Next(0,999999);
+                int i2 = ran.Next(0,999999);
+
+                int tmp = nums[i1];
+                nums[i1] = nums[i2];
+                nums[i2] = tmp;
+            }
+        }
+		//写入文件
+        static void WriteToFile(string path)
+        {
+            StreamWriter sw = File.AppendText(path);
+            for(int i=0;i<1000000;i++) {
+                string s = nums[i].ToString();
+                sw.WriteLine(s);
+            }
+            sw.Close();
+        }
+        //Bitmap排序
+        static void Bit_Sort()
+        {
+            int bitmap = 0;
+            for (int i = 0; i < nums.Length; i++)
+            {
+                int n = nums[i];
+                bitmap=Set_Bit1(bitmap,n);
+            }
+            int j = 0;
+            for (int i = 1; i <= nums.Length; i++)
+            {
+                if (Get_Bit1(bitmap, i))
+                {
+                    nums[j++] = i;
+                }
+            }
+        }
+        //设置bit位为1（bit从0开始）
+        static int Set_Bit1(int bitmap, int bit)
+        {
+            return bitmap | (1<<bit);
+        }
+ 		//判断bit位是否为1（bit从0开始）
+        static bool Get_Bit1(int bitmap, int bit)
+        {
+            return (bitmap & (1<<bit))!=0;
+        }
+
+        static void Main(string[] args)
+        {
+            Generator();
+            WriteToFile(pathBefore);
+            Bit_Sort();
+            WriteToFile(pathAfter);
+
+            Console.WriteLine("排序成功,文件->"+pathAfter);
+
+            Console.ReadKey();
+        }
+    }
+	}
+
+运行结果存在bin/Debug/after.txt下，如下图：
+
+排序前 before.txt（部分）：
+
+![](http://wxzwsj197950.github.io/MyImgs/20160204/1.bmp)
+
+![](http://wxzwsj197950.github.io/MyImgs/20160204/2.bmp)
+
+![](http://wxzwsj197950.github.io/MyImgs/20160204/3.bmp)
+
+排序后 after.txt （部分）：
+
+![](http://wxzwsj197950.github.io/MyImgs/20160204/a1.bmp)
+
+![](http://wxzwsj197950.github.io/MyImgs/20160204/a2.bmp)
+
+![](http://wxzwsj197950.github.io/MyImgs/20160204/a3.bmp)
+
+**经测试，Bitmap排序的速度在1000万数据时是C#自带的Array.sort的3倍，5000万数据时是Array.sort的3.7倍。**

@@ -1,17 +1,18 @@
-# Site settings
-title: WUXX BLOG
+﻿# Site settings
+title: 吴XX的博客
 header-img: img/home-bg.jpg
 email: 935817127@qq.com
-description: "This is Wuxx's Blog"
+description: "这是吴XX的博客"
 baseurl: "/myblog"
-url: "http://wxzwsj197950.hithub.io/myblog"
+url: "http://wxzwsj197950.github.io"
 twitter_username: SBootstrap
-github_username:  davidtmiller
+github_username:  wxzwsj197950
 facebook_username:  IronSummitMedia
-
+qq_username: 935817127
+mail_to: mailto:935817127@qq.com
 # Build settings
 markdown: kramdown
-highlighter: pygments
+highlighter: rouge
 permalink: pretty
 paginate: 5
 exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]

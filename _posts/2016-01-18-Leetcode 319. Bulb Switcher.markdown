@@ -1,0 +1,33 @@
+---
+layout:     post
+title:      "Leetcode 319. Bulb Switcher"
+subtitle:   "Leetcode 319"
+date:       2016-01-18 12:00:00
+author:     "Wuxx"
+header-img: "img/post-bg-01.jpg"
+---
+# Leetcode 319\. Bulb Switcher #
+
+**一开始用模拟的方法（两个循环。。。简单粗暴）结果超时。。。然后看了下大神们提交的答案。。。终于明白了Tag里面脑筋急转弯的含义。。。智商还是不够用啊**
+
+**看题目：**
+
+
+### 319\. Bulb Switcher
+
+There are bulbs that are initially off. You first turn on all the bulbs. Then, you turn off every second bulb. On the third round, you toggle every third bulb (turning on if it's off or turning off if it's on). For the ***n***th round, you only toggle the last bulb. Find how many bulbs are on after ***n*** rounds. **Example:**
+
+> Given n = 3. 
+> 
+> At first, the three bulbs are [off, off, off].
+> After first round, the three bulbs are [on, on, on].
+> After second round, the three bulbs are [on, off, on].
+> After third round, the three bulbs are [on, off, off]. 
+> 
+> So you should return 1, because there is only one bulb is on.
+
+
+看了分析就会恍然大悟，一个灯它被按的次数偶数时它最后是关的，当被按的次数是奇数时，它最后是开的。而第k轮按序号是k的倍数的灯， 所以我们就是求灯的序号能被多少个数整除，也就是它会被按下多少次。但是还没完，一个数，比如12，它能被3整除，12/3=4，所以它也能被4整除。12/2和12/6同理。 也就是说3和4,2和6这样能整除12的数是成对出现的，唯一的例外是这个数是个平方数，比如9，9/3=3，这个3就只有一个，所以最后的结论是一个数 如果是平方数，能整除它的数有奇数个，否则总是有偶数个数能整除它。所以一个灯的序号是平方数时它会被按奇数次，最后是亮的。 所以求最后亮的灯数只有一句代码：    
+
+  
+```return (int)Math.sqrt(n);//n是灯的总数```

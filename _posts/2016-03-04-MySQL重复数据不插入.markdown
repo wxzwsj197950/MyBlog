@@ -1,0 +1,72 @@
+---
+layout:     post
+title:      "MYSQL实现存在相同行就不添加"
+subtitle:   "DUAL表的作用"
+date:       2016-01-31 23:00:00
+author:     "Wuxx"
+header-img: "img/post-bg-02.jpg"
+---
+
+最近写了个程序，每天从知乎日报的RSS源爬下来文章，存在数据库里面，但是发现文章总有重复，一篇同样的文章数据库里可能有好几份，要怎么解决呢？
+
+当然可以在程序里面插入数据库时解决，但是我第一想法是在SQL语句中解决，百度了半天终于找到答案。。。
+
+表名叫tb_art，3个字段 title,content,time。title,content相同时就认为是重复了，就不插入。SQL语句如下：
+
+	insert into tb_art (title,content,time) 
+	select ?t,?c,?time from dual where not exists
+    (select title,content from tb_art 
+	where title=?t and content=?c)
+
+网上只讲了怎么写，没有说明为什么可以这样写。。。
+
+		insert into tb_art select x,x,x from yyy
+
+这个语句是从yyy表取出x,x,x字段插入tb_art表
+        
+		where not exists xxx
+
+这句当xxx不存在时成立
+
+         select title,content from tb_art 
+		 where title=?t and content=?c
+
+这句就是从当前表中选出要插入的内容，当内容已经存在，返回非空的表，否则返回空表。
+
+这句话接在not exists后面就是插入内容存在not exists不成立，当插入内容不存在not exists成立。
+
+当插入数据存在时
+
+		select ?t,?c,?time from dual where
+where后面的不成立所以返回空表，自然不插入新数据，当插入数据不存在时，执行这句话。
+
+问题就是
+
+		select ?t,?c,?time from dual
+
+这句话取到的到底是什么鬼。。。
+在Navicat里面试了一下，返回结果就是字段名和字段内容一样的一个表。
+
+比如 你执行 
+		
+		select 'a','b','c' from dual
+
+那么返回的就是
+		
+		| a | b | c |
+	   ________________
+		| a | b | c |
+
+那么这个dual表到底是什么。。。
+
+百度一下，你就知道。。。。dual是数据库系统为你生成的一张虚拟表，你可以往里面插数据，改数据，甚至删除这表（会启动不起来数据库，后果自负！），你每次查询他，他都保证只返回一个结果，这个表的目的是为了方便表达式计算，比如 
+
+**select 1+1 from dual** 返回 **2**
+
+**select sys_date() from dual**返回**当前时间**
+
+另外像前面举的例子
+	
+**select 'a','b','c' from dual**
+
+总结：所以如果不存在要插入的数据，select ?t,?c,?time from dual返回的表就是只有一行并且值为你要插入数据的表，然后insert into select这句话就把这只有一行的表插入tb_art了。

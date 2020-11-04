@@ -31,7 +31,8 @@ $(function() {
                 firstName = name.split(' ').slice(0, -1).join(' ');
             }
             $.ajax({
-                url: "././mail/contact_me.php",
+                //url: "././mail/contact_me.php",
+                url: "mailto:935817127@qq.com?subject="+name+"的反馈信息?body=message"+"联系电话："+phone+" email："+email;
                 type: "POST",
                 data: {
                     name: name,

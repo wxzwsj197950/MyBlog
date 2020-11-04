@@ -1,0 +1,146 @@
+---
+layout:     post
+title:      "BFS寻路"
+subtitle:   "最笨寻路法"
+date:       2016-01-31 23:00:02
+author:     "Wuxx"
+header-img: "img/post-bg-01.jpg"
+---
+
+BFS，属于一种盲目搜寻法，目的是系统地展开并检查图中的所有节点，以找寻结果。换句话说，它并不考虑结果的可能位置，彻底地搜索整张图，直到找到结果为止。
+
+相对于DFS，DFS总往‘长‘的搜而BFS总往’宽‘的搜。在寻路中就是，DFS选中一条路就走到黑直到无路可走发现到不了终点才掉头。BFS是每到一个路口
+都记下所有岔道，然后一个岔道一个岔道去试。（可能有点不形象。。。听不懂就当我没说。。。）对于一幅图，DFS，BFS都能遍历所有能到的点，但是BFS得出的结果始终是边数最少的。
+
+我写了个小程序演示BFS的效果。
+
+![](http://wxzwsj197950.github.io/MyImgs/20160226/bfs.gif)
+
+红色是起点，绿色是终点，灰色是无法通过的格子。
+
+地图是从文件读取的，文件是一个文本文件，格子之间用空格隔开，一共10行，10列，0表示可以通过，1表示无法通过，*表示起点，#表示终点
+
+我的map.txt如下
+
+	0 0 0 1 0 0 1 0 1 0
+	0 # 0 1 0 0 1 0 1 0
+	0 0 0 1 0 0 1 0 1 0
+	0 0 0 0 0 0 1 0 0 0
+	1 1 1 0 0 0 0 0 0 0
+	0 0 0 0 0 1 0 0 0 0
+	0 0 0 1 0 1 0 0 0 0
+	0 0 0 1 0 1 0 0 * 0
+	0 0 0 1 0 1 0 0 0 0
+	0 0 0 1 0 1 0 0 0 0
+
+主要代码如下：
+
+        //读文件构建地图
+		private void BuildFromFile(string path)
+        {
+            string[] lines = System.IO.File.ReadAllLines(path);
+            for(int j=0;j<lines.Length;j++)
+            {
+                string s = lines[j];
+                string[] tmp=s.Split(' ');
+                for (int i = 0; i < tmp.Length; i++)
+                {
+                    Tile t = new Tile();
+                    t.x = i;
+                    t.y = j;
+                    if(tmp[i] == "1") t.block = true;
+                    if (tmp[i] == "*")
+                    {
+                        t.finish = true;
+                        this.endTile = t;
+                    }
+                    if (tmp[i] == "#")
+                    {
+                        t.start = true;
+                        this.startTile = t;
+                    }
+                    map[j,i] = t;
+                }
+            }
+        }	  
+		//BFS搜索地图
+	  void BFS() {
+			Node startNode = new Node();
+            startNode.now = startTile;
+            startNode.pre = null;
+            que.Enqueue(startNode);
+            while (que.Count > 0)
+            {
+                Node node = que.Dequeue();
+                path.Enqueue(node);
+                if (node.now.finish)
+                {
+                    return node;
+                }
+                if (node.now.y >= 1)
+                {
+                    Node up = new Node();
+                    up.now = map[node.now.y-1, node.now.x];
+                    up.pre = node;
+                    if (!up.now.block && !visited[up.now.y,up.now.x])
+                    {
+                        que.Enqueue(up);
+                        visited[up.now.y, up.now.x] = true;
+                    }
+                }
+                if (node.now.y < 9)
+                {
+                    Node down = new Node();
+                    down.now = map[node.now.y+1, node.now.x];
+                    down.pre = node;
+                    if (!down.now.block && !visited[down.now.y, down.now.x])
+                    {
+                        que.Enqueue(down);
+                        visited[down.now.y, down.now.x] = true;
+                    }
+                }
+                if (node.now.x >= 1)
+                {
+                    Node left = new Node();
+                    left.now = map[node.now.y, node.now.x-1];
+                    left.pre = node;
+                    if (!left.now.block && !visited[left.now.y, left.now.x])
+                    {
+                        que.Enqueue(left);
+                        visited[left.now.y, left.now.x] = true;
+                    }
+                }
+                if (node.now.x < 9)
+                {
+                    Node right = new Node();
+                    right.now = map[node.now.y, node.now.x+1];
+                    right.pre = node;
+                    if (!right.now.block && !visited[right.now.y, right.now.x])
+                    {
+                        que.Enqueue(right);
+                        visited[right.now.y, right.now.x] = true;
+                    }
+                }
+            }
+            return null;
+		}
+		//表示地图的一个格子
+		class Tile
+    {
+        public bool block = false;
+        public int x;
+        public int y;
+        public bool finish = false;
+        public bool start = false;
+    }
+	//表示一个路径点，pre指向遍历中的上一点
+    class Node
+    {
+        public Tile now;
+        public Node pre;
+    }
+
+
+好吧，其实BFS也不算最笨的寻路方法，网上看过传说中的醉汉寻路，不记录已经走过的格子，所以会走回头路，能不能到终点全看人品。。。
+
+有个很有名的Dijkstra算法能保证找到最短路径，但是速度比较慢，游戏制作中非常有名的寻路算法是A*算法。网上讲的很多，我通俗的理解就是在BFS中入队列操作根据一个估值函数排序，这个函数 表示成 G+H,G是已经走过的格子消耗的体力，H是估计到终点最少还要消耗的体力。原理很简单，A\*的效果看得就是这个估值函数准不准，所以重点就在这个H函数，以后有时间写一下。。。
